@@ -14,7 +14,7 @@
 #error "This file requires a compiler that implements the widberg extensions."
 #endif
 
-// freestanding headers only
+// Freestanding Headers Only
 #include <stddef.h> // NULL size_t
 #include <limits.h> // CHAR_BIT
 
@@ -50,6 +50,7 @@ typedef signed long long sll;
 #if __is_identifier(__int64)
 #define __int64 long long
 #endif
+// __int128 is always defined by Clang as a keyword
 
 // Fixed Width Integer Types
 typedef __int8 int8;
@@ -75,6 +76,8 @@ typedef uint32 _DWORD;
 typedef uint64 _QWORD;
 typedef uint128 _OWORD;
 typedef uint128 _LONGLONG;
+
+// 10 Byte Floating Point Type
 typedef long double _TBYTE;
 
 // Windows Types
@@ -186,8 +189,8 @@ inline uint128 abs128(int128 value) { return value < 0 ? -value : value; }
 #define LOW_IND(value, type) LAST_IND(value, type)
 #define HIGH_IND(value, type) 0
 #else
-#define HIGH_IND(value, type) LAST_IND(value, type)
 #define LOW_IND(value, type) 0
+#define HIGH_IND(value, type) LAST_IND(value, type)
 #endif
 
 // Unsigned Types
@@ -292,6 +295,7 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 // Function Attributes
 #define __pure __attribute__((pure))
 #define __noreturn __attribute__((noreturn))
+#define __high
 
 // Parameter Attributes
 #define __hidden
@@ -299,8 +303,6 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 #define __struct_ptr
 #define __array_ptr
 #define __unused
-#define __cppobj
-#define __high
 
 // Pointer Attributes
 #if __is_identifier(__ptr32)
@@ -316,11 +318,14 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 #define __uptr
 #endif
 
+// Struct Attributes
+#define __cppobj
+
 ///////////////////
 // Shifted Pointers
 ///////////////////
 // https://hex-rays.com/products/ida/support/idadoc/1695.shtml
-// TODO: Implement these in the compiler so this actually works
+// TODO: Implement these in the compiler
 #define __shifted(...)
 #define __parentof(...)
 #define __deltaof(...)
