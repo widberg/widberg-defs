@@ -37,21 +37,6 @@ typedef signed long long sll;
 #define MAKELL(integer_literal) integer_literal##LL
 #define FMT_64 "ll"
 
-// Define the MSVC fixed width integer type keywords if the extension is not enabled
-#if __is_identifier(__int8)
-#define __int8 char
-#endif
-#if __is_identifier(__int16)
-#define __int16 short
-#endif
-#if __is_identifier(__int32)
-#define __int32 int
-#endif
-#if __is_identifier(__int64)
-#define __int64 long long
-#endif
-// __int128 is always defined by Clang as a keyword
-
 // Fixed Width Integer Types
 typedef __int8 int8;
 typedef unsigned __int8 uint8;
@@ -185,12 +170,12 @@ inline uint128 abs128(int128 value) { return value < 0 ? -value : value; }
 ////////////////
 // Indices
 #define LAST_IND(value, type) (sizeof(value) / sizeof(type) - 1)
-#if __BYTE_ORDER == __BIG_ENDIAN
-#define LOW_IND(value, type) LAST_IND(value, type)
-#define HIGH_IND(value, type) 0
-#else
+#ifdef __LITTLE_ENDIAN__
 #define LOW_IND(value, type) 0
 #define HIGH_IND(value, type) LAST_IND(value, type)
+#else
+#define LOW_IND(value, type) LAST_IND(value, type)
+#define HIGH_IND(value, type) 0
 #endif
 
 // Unsigned Types
@@ -305,18 +290,11 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 #define __unused
 
 // Pointer Attributes
-#if __is_identifier(__ptr32)
-#define __ptr32
-#endif
-#if __is_identifier(__ptr64)
-#define __ptr64
-#endif
-#if __is_identifier(__sptr)
-#define __sptr
-#endif
-#if __is_identifier(__uptr)
-#define __uptr
-#endif
+// These are implemented by the compiler
+// #define __ptr32
+// #define __ptr64
+// #define __sptr
+// #define __uptr
 
 // Struct Attributes
 #define __cppobj
@@ -325,11 +303,12 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 // Shifted Pointers
 ///////////////////
 // https://hex-rays.com/products/ida/support/idadoc/1695.shtml
-// TODO: Implement these in the compiler
-#define __shifted(...)
-#define __parentof(...)
-#define __deltaof(...)
-#define ADJ(...)
+// These are implemented by the compiler
+// #define __shifted(parent, delta)
+// #define __parentof(value)
+// #define __deltaof(value)
+// This is a predefined macro by the compiler
+// #define ADJ(ptr) (__parentof(ptr) *)((char *)ptr - __deltaof(ptr))
 
 //////////////////////
 // Calling Conventions
