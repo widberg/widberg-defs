@@ -10,7 +10,7 @@ This project is a clean-room implementation of defs.h from the Hex-Rays decompil
 
 You can download the header and add it to your project sources directly
 
-`curl https://raw.githubusercontent.com/widberg/widberg-defs/master/include/defs.h`
+`wget https://raw.githubusercontent.com/widberg/widberg-defs/master/include/defs.h`
 
 or use CMake to add it as a dependency
 
