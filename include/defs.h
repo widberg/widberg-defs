@@ -246,6 +246,7 @@ inline uint128 abs128(int128 value) { return value < 0 ? -value : value; }
 #define SWORD6(value) SWORDn(value, 6)
 #define SWORD7(value) SWORDn(value, 7)
 
+// Packed Pairs
 #define __SPAIR16__(high, low) (((int16)(high) << 8) | (uint8)(low))
 #define __SPAIR32__(high, low) (((int32)(high) << 16) | (uint16)(low))
 #define __SPAIR64__(high, low) (((int64)(high) << 32) | (uint32)(low))
@@ -254,6 +255,9 @@ inline uint128 abs128(int128 value) { return value < 0 ? -value : value; }
 #define __PAIR32__(high, low) (((uint32)(high) << 16) | (uint16)(low))
 #define __PAIR64__(high, low) (((uint64)(high) << 32) | (uint32)(low))
 #define __PAIR128__(high, low) (((uint128)(high) << 64) | (uint64)(low))
+
+// Raw Memory Access
+#define MEMORY ((char *)NULL)
 
 //////////
 // qmemcpy
@@ -308,7 +312,7 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 // #define __parentof(value)
 // #define __deltaof(value)
 // This macro is predefined by the compiler
-// #define ADJ(ptr) (__parentof(ptr) *)((char *)ptr - __deltaof(ptr))
+// #define ADJ(ptr) (__parentof(ptr) *)((char *)(ptr) - __deltaof(ptr))
 
 //////////////////////
 // Calling Conventions
