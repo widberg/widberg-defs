@@ -10,10 +10,6 @@
 #define __has_extension __has_feature // Compatibility with pre-3.0 compilers.
 #endif
 
-#if !__has_extension(widberg)
-#error "This file requires a compiler that implements the widberg extensions."
-#endif
-
 // Freestanding Headers Only
 #include <stddef.h> // NULL size_t
 #include <limits.h> // CHAR_BIT
@@ -50,6 +46,11 @@ typedef signed __int32 sint32;
 typedef __int64 int64;
 typedef unsigned __int64 uint64;
 typedef signed __int64 sint64;
+
+// If the target doesn't support 128 bit integers, define one ourselves
+#ifndef __SIZEOF_INT128__
+typedef _BitInt(128) __int128;
+#endif
 typedef __int128 int128;
 typedef unsigned __int128 uint128;
 typedef signed __int128 sint128;
@@ -257,6 +258,7 @@ inline uint128 abs128(int128 value) { return value < 0 ? -value : value; }
 #define __PAIR128__(high, low) (((uint128)(high) << 64) | (uint64)(low))
 
 // Raw Memory Access
+// https://hex-rays.com/blog/igors-tip-of-the-week-108-raw-memory-accesses-in-pseudocode/
 #define MEMORY ((char *)NULL)
 
 //////////
@@ -267,7 +269,7 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
   char *dest_ = (char *)dest;
   const char *src_ = (const char *)src;
 
-// No funny business. One byte at a time, beginning to end.
+// No funny business. One byte at a time, low to high.
 #pragma clang loop vectorize(disable)
 #pragma clang loop interleave(disable)
 #pragma clang loop unroll(disable)
