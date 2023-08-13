@@ -314,7 +314,7 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 // #define __parentof(value)
 // #define __deltaof(value)
 // This macro is predefined by the compiler
-// #define ADJ(ptr) (__parentof(ptr) *)((char *)(ptr) - __deltaof(ptr))
+// #define ADJ(ptr) ((__parentof(value) *)((char *)(value) - __deltaof(value)))
 
 //////////////////////
 // Calling Conventions
