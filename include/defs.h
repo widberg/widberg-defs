@@ -139,6 +139,16 @@ inline uint128 abs128(int128 value) { return value < 0 ? -value : value; }
 /////////////////
 // Bit Operations
 /////////////////
+// Sign bit
+#define __SETS__(value) (sizeof(value) * CHAR_BIT != 0 ? ((value >> (sizeof(value) * CHAR_BIT - 1)) & 1) == 1 : false)
+
+// Parity
+#define __SETP__(a, b) __builtin_parity(a - b)
+
+// Shift
+#define __MKCSHL__(value, count) (((value >> (count - (count % (sizeof(value) * CHAR_BIT)))) & 1) == 1)
+#define __MKCSHR__(value, count) (((value >> (count - 1)) & 1) == 1)
+
 // Rotate
 #define __ROL1__ __builtin_rotateleft8
 #define __ROL2__ __builtin_rotateleft16
@@ -150,21 +160,12 @@ inline uint128 abs128(int128 value) { return value < 0 ? -value : value; }
 #define __ROR8__ __builtin_rotateright64
 
 // Rotate through carry
-// TODO: Implement these with compiler built-ins/intrinsics
-#define __RCL__(...)
-#define __RCR__(...)
-#define __MKCRCL__(...)
-#define __MKCRCR__(...)
-
-// Shift
-#define __MKCSHL__(value, count) (((value >> (count - (count % (sizeof(value) * CHAR_BIT)))) & 1) == 1)
-#define __MKCSHR__(value, count) (((value >> (count - 1)) & 1) == 1)
-
-// Sign bit
-#define __SETS__(value) (sizeof(value) * CHAR_BIT != 0 ? ((value >> (sizeof(value) * CHAR_BIT - 1)) & 1) == 1 : false)
-
-// Parity
-#define __SETP__(a, b) __builtin_parity(a - b)
+// The signatures on these really should take in a carry bit
+// https://gcc.gnu.org/bugzilla//show_bug.cgi?id=99582
+#define __RCL__(value, count, carry) ((value << count) | (value >> (sizeof(value) * CHAR_BIT - count)) | (carry << (count - 1)))
+#define __RCR__(value, count, carry) ((value >> count) | (value << (sizeof(value) * CHAR_BIT - count)) | (carry << (sizeof(value) * CHAR_BIT - count - 1)))
+#define __MKCRCL__(value, count, carry) (__RCL__(value, count, carry) & 1)
+#define __MKCRCR__(value, count, carry) (__SETS__(__RCR__(value, count, carry)))
 
 ////////////////
 // Memory Access

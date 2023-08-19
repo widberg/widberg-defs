@@ -1,6 +1,6 @@
 # widberg-defs
 
-A clean-room implementation of defs.h from the Hex-Rays decompiler sdk.
+An alternative implementation of defs.h from the Hex-Rays decompiler sdk.
 
 ### Overview
 
