@@ -260,7 +260,7 @@ inline uint128 abs128(int128 value) { return value < 0 ? -value : value; }
 
 // Raw Memory Access
 // https://hex-rays.com/blog/igors-tip-of-the-week-108-raw-memory-accesses-in-pseudocode/
-#define MEMORY ((char *)NULL)
+#define MEMORY ((_BYTE *)NULL)
 
 //////////
 // qmemcpy
@@ -329,6 +329,7 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 ///////////////
 
 // JUMPOUT
-#define JUMPOUT(value) ((void (*)())(value))()
+typedef __noreturn void (*__t_jumpout)(void);
+#define JUMPOUT(value) ((__t_jumpout)(value))()
 
 #endif // HEXRAYS_DEFS_H
