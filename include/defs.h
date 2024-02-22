@@ -11,7 +11,7 @@
 #endif
 
 // Freestanding Headers Only
-#include <stddef.h> // NULL size_t
+#include <stddef.h> // NULL size_t offsetof
 #include <limits.h> // CHAR_BIT
 
 ////////
@@ -102,6 +102,10 @@ typedef int64 _BOOL8;
 #define COERCE_LONG_DOUBLE(value) __builtin_bit_cast(long double, value)
 #define COERCE_UNSIGNED_INT(value) __builtin_bit_cast(unsigned int, value)
 #define COERCE_UNSIGNED_INT64(value) __builtin_bit_cast(uint64, value)
+
+#ifndef CONTAINING_RECORD
+#define CONTAINING_RECORD(address, type, field) ((type *)((_BYTE*)(address) - offsetof(type, field)))
+#endif
 
 /////////////////////
 // Checked Arithmetic
@@ -330,6 +334,6 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 
 // JUMPOUT
 typedef __noreturn void (*__t_jumpout)(void);
-#define JUMPOUT(value) ((__t_jumpout)(value))()
+#define JUMPOUT(value) (((__t_jumpout)(value))())
 
 #endif // HEXRAYS_DEFS_H
