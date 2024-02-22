@@ -324,4 +324,11 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 // https://www.hex-rays.com/products/ida/support/idadoc/1361.shtml
 // __usercall __spoils __userpurge
 
+///////////////
+// Control Flow
+///////////////
+
+// JUMPOUT
+#define JUMPOUT(value) ((void (*)())(value))()
+
 #endif // HEXRAYS_DEFS_H
