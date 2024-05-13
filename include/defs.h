@@ -105,7 +105,7 @@ typedef int64 _BOOL8;
 // Addition
 // Clang does not support __builtin_add_overflow_p
 #define __OFADD__(a, b) ({ __typeof__((a) + (b)) x; __builtin_add_overflow((a), (b), &x); })
-#define __CFADD__ __OFADD__
+#define __CFADD__(a, b) ((__typeof__((a) + (b)))(a) > ((a) + (b)))
 
 // Subtraction
 // https://stackoverflow.com/a/21371401/3997768
@@ -120,7 +120,7 @@ typedef int64 _BOOL8;
 #define GET_MACRO(_0, _1, _2, _3, NAME, ...) NAME
 #define __CFSUB__(...) GET_MACRO(_0, ##__VA_ARGS__, __CFSUB__3, __CFSUB__2, __CFSUB__1, __CFSUB__0)(__VA_ARGS__)
 
-#define __CFSUB__2(a, b) __OFSUB__2
+#define __CFSUB__2(a, b) ((__typeof__((a) - (b)))(a) < (__typeof__((a) - (b)))(b))
 #define __CFSUB__3(a, b, c) (__CFADD__(y, c) ^ __CFSUB__(x, y + c))
 
 // Multiplication
