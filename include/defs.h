@@ -2,14 +2,6 @@
 #ifndef HEXRAYS_DEFS_H
 #define HEXRAYS_DEFS_H
 
-// Verify that the widberg extensions are present
-#ifndef __has_feature
-#define __has_feature(x) 0 // Compatibility with non-clang compilers.
-#endif
-#ifndef __has_extension
-#define __has_extension __has_feature // Compatibility with pre-3.0 compilers.
-#endif
-
 // Freestanding Headers Only
 #include <stddef.h> // NULL size_t offsetof
 #include <limits.h> // CHAR_BIT
@@ -49,7 +41,7 @@ typedef signed __int64 sint64;
 
 // If the target doesn't support 128 bit integers, define one ourselves
 #ifndef __SIZEOF_INT128__
-typedef _BitInt(128) __int128;
+#define __int128 _BitInt(128)
 #endif
 typedef __int128 int128;
 typedef unsigned __int128 uint128;
@@ -111,7 +103,8 @@ typedef int64 _BOOL8;
 // Checked Arithmetic
 /////////////////////
 // Addition
-#define __OFADD__(a, b) __builtin_add_overflow_p(a, b, (__typeof__((a) + (b)))0)
+// Clang does not support __builtin_add_overflow_p
+#define __OFADD__(a, b) ({ __typeof__((a) + (b)) x; __builtin_add_overflow((a), (b), &x); })
 #define __CFADD__ __OFADD__
 
 // Subtraction
@@ -119,7 +112,8 @@ typedef int64 _BOOL8;
 #define GET_MACRO(_0, _1, _2, _3, NAME, ...) NAME
 #define __OFSUB__(...) GET_MACRO(_0, ##__VA_ARGS__, __OFSUB__3, __OFSUB__2, __OFSUB__1, __OFSUB__0)(__VA_ARGS__)
 
-#define __OFSUB__2(a, b) __builtin_sub_overflow_p(a, b, (__typeof__((a) - (b)))0)
+// Clang does not support __builtin_sub_overflow_p
+#define __OFSUB__2(a, b) ({ __typeof__((a) - (b)) x; __builtin_sub_overflow((a), (b), &x); })
 #define __OFSUB__3(a, b, c) (__OFADD__(y, c) ^ __OFSUB__(x, y + c))
 
 // https://stackoverflow.com/a/21371401/3997768
@@ -130,7 +124,8 @@ typedef int64 _BOOL8;
 #define __CFSUB__3(a, b, c) (__CFADD__(y, c) ^ __CFSUB__(x, y + c))
 
 // Multiplication
-#define is_mul_ok(a, b) __builtin_mul_overflow_p(a, b, (__typeof__((a) * (b)))0)
+// Clang does not support __builtin_mul_overflow_p
+#define is_mul_ok(a, b) ({ __typeof__((a) * (b)) x; __builtin_mul_overflow((a), (b), &x); })
 #define saturated_mul(a, b) (is_mul_ok(a, b) ? a * b : (__typeof__((a) * (b)))(-1))
 
 // Absolute Value
@@ -326,14 +321,14 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 //////////////////////
 // These are already implemented in the compiler
 // https://www.hex-rays.com/products/ida/support/idadoc/1361.shtml
-// __usercall __spoils __userpurge
+// __usercall __userpurge __spoils
 
 ///////////////
 // Control Flow
 ///////////////
 
 // JUMPOUT
-typedef __noreturn void (*__t_jumpout)(void);
-#define JUMPOUT(value) (((__t_jumpout)(value))())
+typedef __noreturn void (*__jumpout_t)(void);
+#define JUMPOUT(value) (((__jumpout_t)(value))())
 
 #endif // HEXRAYS_DEFS_H
