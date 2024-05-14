@@ -16,5 +16,5 @@ or use CMake to add it as a dependency
 
 ```cmake
 add_subdirectory(widberg-defs)
-target_link_libraries(my_target widberg_defs)
+target_link_libraries(my_target widberg-defs)
 ```
