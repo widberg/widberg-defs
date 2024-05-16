@@ -7,6 +7,10 @@
 #include <stddef.h> // NULL size_t offsetof
 #include <stdint.h> // [u]intX_t
 
+#ifndef __is_identifier
+  #define __is_identifier(x) 0 // Compatibility with non-clang compilers.
+#endif
+
 ////////
 // Types
 ////////
@@ -297,11 +301,19 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 #define __unused
 
 // Pointer Attributes
-// These are implemented by the compiler
-// #define __ptr32
-// #define __ptr64
-// #define __sptr
-// #define __uptr
+// If these are not implemented by the compiler define them
+#if __is_identifier(__ptr32)
+  #define __ptr32
+#endif
+#if __is_identifier(__ptr64)
+  #define __ptr64
+#endif
+#if __is_identifier(__sptr)
+  #define __sptr
+#endif
+#if __is_identifier(__uptr)
+  #define __uptr
+#endif
 
 // Struct Attributes
 #define __cppobj
@@ -310,19 +322,35 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 // Shifted Pointers
 ///////////////////
 // https://hex-rays.com/products/ida/support/idadoc/1695.shtml
-// These are implemented by the compiler
-// #define __shifted(parent, delta)
-// #define __parentof(value)
-// #define __deltaof(value)
-// This macro is predefined by the compiler
-// #define ADJ(ptr) ((__parentof(value) *)((char *)(value) - __deltaof(value)))
+// If these are not implemented by the compiler define them
+#if __is_identifier(__shifted)
+  #define __shifted(parent, delta)
+#endif
+#if __is_identifier(__parentof)
+  #define __parentof(value)
+#endif
+#if __is_identifier(__deltaof)
+  #define __deltaof(value)
+#endif
+// If this macro is not predefined by the compiler define it
+#ifndef ADJ
+  #define ADJ(ptr) ((__parentof(value) *)((char *)(value) - __deltaof(value)))
+#endif
 
 //////////////////////
 // Calling Conventions
 //////////////////////
-// These are already implemented in the compiler
 // https://www.hex-rays.com/products/ida/support/idadoc/1361.shtml
-// __usercall __userpurge __spoils
+// If these are not implemented by the compiler define them
+#if __is_identifier(__usercall)
+  #define __usercall
+#endif
+#if __is_identifier(__userpurge)
+  #define __userpurge
+#endif
+#if __is_identifier(__spoils)
+  #define __spoils
+#endif
 
 ///////////////
 // Control Flow
