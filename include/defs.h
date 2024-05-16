@@ -3,8 +3,9 @@
 #define HEXRAYS_DEFS_H
 
 // Freestanding Headers Only
-#include <stddef.h> // NULL size_t offsetof
 #include <limits.h> // CHAR_BIT
+#include <stddef.h> // NULL size_t offsetof
+#include <stdint.h> // [u]intX_t
 
 ////////
 // Types
@@ -26,18 +27,18 @@ typedef signed long long sll;
 #define FMT_64 "ll"
 
 // Fixed Width Integer Types
-typedef __int8 int8;
-typedef unsigned __int8 uint8;
-typedef signed __int8 sint8;
-typedef __int16 int16;
-typedef unsigned __int16 uint16;
-typedef signed __int16 sint16;
-typedef __int32 int32;
-typedef unsigned __int32 uint32;
-typedef signed __int32 sint32;
-typedef __int64 int64;
-typedef unsigned __int64 uint64;
-typedef signed __int64 sint64;
+typedef int8_t int8;
+typedef uint8_t uint8;
+typedef int8_t sint8;
+typedef int16_t int16;
+typedef uint16_t uint16;
+typedef int16_t sint16;
+typedef int32_t int32;
+typedef uint32_t uint32;
+typedef int32_t sint32;
+typedef int64_t int64;
+typedef uint64_t uint64;
+typedef int64_t sint64;
 
 // If the target doesn't support 128 bit integers, define one ourselves
 #ifndef __SIZEOF_INT128__
@@ -89,11 +90,11 @@ typedef int64 _BOOL8;
 ////////////////
 // __builtin_bit_cast requires source and destination types to be the same size and trivially copyable
 // This is probably for the best
-#define COERCE_FLOAT(value) __builtin_bit_cast(float, value)
-#define COERCE_DOUBLE(value) __builtin_bit_cast(double, value)
-#define COERCE_LONG_DOUBLE(value) __builtin_bit_cast(long double, value)
-#define COERCE_UNSIGNED_INT(value) __builtin_bit_cast(unsigned int, value)
-#define COERCE_UNSIGNED_INT64(value) __builtin_bit_cast(uint64, value)
+#define COERCE_FLOAT(value) __builtin_bit_cast(float, (value))
+#define COERCE_DOUBLE(value) __builtin_bit_cast(double, (value))
+#define COERCE_LONG_DOUBLE(value) __builtin_bit_cast(long double, (value))
+#define COERCE_UNSIGNED_INT(value) __builtin_bit_cast(unsigned int, (value))
+#define COERCE_UNSIGNED_INT64(value) __builtin_bit_cast(uint64, (value))
 
 #ifndef CONTAINING_RECORD
 #define CONTAINING_RECORD(address, type, field) ((type *)((_BYTE*)(address) - offsetof(type, field)))
@@ -121,12 +122,12 @@ typedef int64 _BOOL8;
 #define __CFSUB__(...) GET_MACRO(_0, ##__VA_ARGS__, __CFSUB__3, __CFSUB__2, __CFSUB__1, __CFSUB__0)(__VA_ARGS__)
 
 #define __CFSUB__2(a, b) ((__typeof__((a) - (b)))(a) < (__typeof__((a) - (b)))(b))
-#define __CFSUB__3(a, b, c) (__CFADD__(y, c) ^ __CFSUB__(x, y + c))
+#define __CFSUB__3(a, b, c) (__CFADD__((b), (c)) ^ __CFSUB__((a), (b) + c))
 
 // Multiplication
 // Clang does not support __builtin_mul_overflow_p
 #define is_mul_ok(a, b) ({ __typeof__((a) * (b)) x; __builtin_mul_overflow((a), (b), &x); })
-#define saturated_mul(a, b) (is_mul_ok(a, b) ? a * b : (__typeof__((a) * (b)))(-1))
+#define saturated_mul(a, b) (is_mul_ok((a), (b)) ? (a) * (b) : (__typeof__((a) * (b)))(-1))
 
 // Absolute Value
 inline uint8 abs8(int8 value) { return value < 0 ? -value : value; }
@@ -139,14 +140,14 @@ inline uint128 abs128(int128 value) { return value < 0 ? -value : value; }
 // Bit Operations
 /////////////////
 // Sign bit
-#define __SETS__(value) (sizeof(value) * CHAR_BIT != 0 ? ((value >> (sizeof(value) * CHAR_BIT - 1)) & 1) == 1 : false)
+#define __SETS__(value) (sizeof(value) * CHAR_BIT != 0 ? (((value) >> (sizeof(value) * CHAR_BIT - 1)) & 1) == 1 : 0)
 
 // Parity
-#define __SETP__(a, b) __builtin_parity(a - b)
+#define __SETP__(a, b) __builtin_parity((a) - (b))
 
 // Shift
-#define __MKCSHL__(value, count) (((value >> (count - (count % (sizeof(value) * CHAR_BIT)))) & 1) == 1)
-#define __MKCSHR__(value, count) (((value >> (count - 1)) & 1) == 1)
+#define __MKCSHL__(value, count) ((((value) >> ((count) - ((count) % (sizeof(value) * CHAR_BIT)))) & 1) == 1)
+#define __MKCSHR__(value, count) ((((value) >> ((count) - 1)) & 1) == 1)
 
 // Rotate
 #define __ROL1__ __builtin_rotateleft8
@@ -161,10 +162,10 @@ inline uint128 abs128(int128 value) { return value < 0 ? -value : value; }
 // Rotate through carry
 // The signatures on these really should take in a carry bit
 // https://gcc.gnu.org/bugzilla//show_bug.cgi?id=99582
-#define __RCL__(value, count, carry) ((value << count) | (value >> (sizeof(value) * CHAR_BIT - count)) | (carry << (count - 1)))
-#define __RCR__(value, count, carry) ((value >> count) | (value << (sizeof(value) * CHAR_BIT - count)) | (carry << (sizeof(value) * CHAR_BIT - count - 1)))
-#define __MKCRCL__(value, count, carry) (__RCL__(value, count, carry) & 1)
-#define __MKCRCR__(value, count, carry) (__SETS__(__RCR__(value, count, carry)))
+#define __RCL__(value, count, carry) (((value) << (count)) | ((value) >> (sizeof(value) * CHAR_BIT - (count))) | ((carry) << ((count) - 1)))
+#define __RCR__(value, count, carry) (((value) >> (count)) | ((value) << (sizeof(value) * CHAR_BIT - (count))) | ((carry) << (sizeof(value) * CHAR_BIT - (count) - 1)))
+#define __MKCRCL__(value, count, carry) (__RCL__((value), (count), (carry)) & 1)
+#define __MKCRCR__(value, count, carry) (__SETS__(__RCR__((value), (count), (carry))))
 
 ////////////////
 // Memory Access
@@ -173,79 +174,79 @@ inline uint128 abs128(int128 value) { return value < 0 ? -value : value; }
 #define LAST_IND(value, type) (sizeof(value) / sizeof(type) - 1)
 #ifdef __LITTLE_ENDIAN__
 #define LOW_IND(value, type) 0
-#define HIGH_IND(value, type) LAST_IND(value, type)
+#define HIGH_IND(value, type) LAST_IND((value), type)
 #else
-#define LOW_IND(value, type) LAST_IND(value, type)
+#define LOW_IND(value, type) LAST_IND((value), type)
 #define HIGH_IND(value, type) 0
 #endif
 
 // Unsigned Types
-#define BYTEn(value, index) (((_BYTE *)&value)[index])
-#define WORDn(value, index) (((_WORD *)&value)[index])
-#define DWORDn(value, index) (((_DWORD *)&value)[index])
+#define BYTEn(value, index) (((_BYTE *)&(value))[index])
+#define WORDn(value, index) (((_WORD *)&(value))[index])
+#define DWORDn(value, index) (((_DWORD *)&(value))[index])
 
-#define LOBYTE(value) BYTEn(value, LOW_IND(value, _BYTE))
-#define LOWORD(value) WORDn(value, LOW_IND(value, _WORD))
-#define LODWORD(value) DWORDn(value, LOW_IND(value, _DWORD))
-#define HIBYTE(value) BYTEn(value, HIGH_IND(value, _BYTE))
-#define HIWORD(value) WORDn(value, HIGH_IND(value, _WORD))
-#define HIDWORD(value) DWORDn(value, HIGH_IND(value, _DWORD))
-#define BYTE1(value) BYTEn(value, 1)
-#define BYTE2(value) BYTEn(value, 2)
-#define BYTE3(value) BYTEn(value, 3)
-#define BYTE4(value) BYTEn(value, 4)
-#define BYTE5(value) BYTEn(value, 5)
-#define BYTE6(value) BYTEn(value, 6)
-#define BYTE7(value) BYTEn(value, 7)
-#define BYTE8(value) BYTEn(value, 8)
-#define BYTE9(value) BYTEn(value, 9)
-#define BYTE10(value) BYTEn(value, 10)
-#define BYTE11(value) BYTEn(value, 11)
-#define BYTE12(value) BYTEn(value, 12)
-#define BYTE13(value) BYTEn(value, 13)
-#define BYTE14(value) BYTEn(value, 14)
-#define BYTE15(value) BYTEn(value, 15)
-#define WORD1(value) WORDn(value, 1)
-#define WORD2(value) WORDn(value, 2)
-#define WORD3(value) WORDn(value, 3)
-#define WORD4(value) WORDn(value, 4)
-#define WORD5(value) WORDn(value, 5)
-#define WORD6(value) WORDn(value, 6)
-#define WORD7(value) WORDn(value, 7)
+#define LOBYTE(value) BYTEn((value), LOW_IND((value), _BYTE))
+#define LOWORD(value) WORDn((value), LOW_IND((value), _WORD))
+#define LODWORD(value) DWORDn((value), LOW_IND((value), _DWORD))
+#define HIBYTE(value) BYTEn((value), HIGH_IND((value), _BYTE))
+#define HIWORD(value) WORDn((value), HIGH_IND((value), _WORD))
+#define HIDWORD(value) DWORDn((value), HIGH_IND((value), _DWORD))
+#define BYTE1(value) BYTEn((value), 1)
+#define BYTE2(value) BYTEn((value), 2)
+#define BYTE3(value) BYTEn((value), 3)
+#define BYTE4(value) BYTEn((value), 4)
+#define BYTE5(value) BYTEn((value), 5)
+#define BYTE6(value) BYTEn((value), 6)
+#define BYTE7(value) BYTEn((value), 7)
+#define BYTE8(value) BYTEn((value), 8)
+#define BYTE9(value) BYTEn((value), 9)
+#define BYTE10(value) BYTEn((value), 10)
+#define BYTE11(value) BYTEn((value), 11)
+#define BYTE12(value) BYTEn((value), 12)
+#define BYTE13(value) BYTEn((value), 13)
+#define BYTE14(value) BYTEn((value), 14)
+#define BYTE15(value) BYTEn((value), 15)
+#define WORD1(value) WORDn((value), 1)
+#define WORD2(value) WORDn((value), 2)
+#define WORD3(value) WORDn((value), 3)
+#define WORD4(value) WORDn((value), 4)
+#define WORD5(value) WORDn((value), 5)
+#define WORD6(value) WORDn((value), 6)
+#define WORD7(value) WORDn((value), 7)
 
 // Signed Types
-#define SBYTEn(value, index) (((int8 *)&value)[index])
-#define SWORDn(value, index) (((int16 *)&value)[index])
-#define SDWORDn(value, index) (((int32 *)&value)[index])
+#define SBYTEn(value, index) (((int8 *)&(value))[index])
+#define SWORDn(value, index) (((int16 *)&(value))[index])
+#define SDWORDn(value, index) (((int32 *)&(value))[index])
 
-#define SLOBYTE(value) SBYTEn(value, LOW_IND(value, int8))
-#define SLOWORD(value) SWORDn(value, LOW_IND(value, int16))
-#define SLODWORD(value) SDWORDn(value, LOW_IND(value, int32))
-#define SHIBYTE(value) SBYTEn(value, HIGH_IND(value, int8))
-#define SHIWORD(value) SWORDn(value, HIGH_IND(value, int16))
-#define SHIDWORD(value) SDWORDn(value, HIGH_IND(value, int32))
-#define SBYTE1(value) SBYTEn(value, 1)
-#define SBYTE2(value) SBYTEn(value, 2)
-#define SBYTE3(value) SBYTEn(value, 3)
-#define SBYTE4(value) SBYTEn(value, 4)
-#define SBYTE5(value) SBYTEn(value, 5)
-#define SBYTE6(value) SBYTEn(value, 6)
-#define SBYTE7(value) SBYTEn(value, 7)
-#define SBYTE8(value) SBYTEn(value, 8)
-#define SBYTE9(value) SBYTEn(value, 9)
-#define SBYTE10(value) SBYTEn(value, 10)
-#define SBYTE11(value) SBYTEn(value, 11)
-#define SBYTE12(value) SBYTEn(value, 12)
-#define SBYTE13(value) SBYTEn(value, 13)
-#define SBYTE14(value) SBYTEn(value, 14)
-#define SBYTE15(value) SBYTEn(value, 15)
-#define SWORD1(value) SWORDn(value, 1)
-#define SWORD2(value) SWORDn(value, 2)
-#define SWORD3(value) SWORDn(value, 3)
-#define SWORD4(value) SWORDn(value, 4)
-#define SWORD5(value) SWORDn(value, 5)
-#define SWORD6(value) SWORDn(value, 6)
-#define SWORD7(value) SWORDn(value, 7)
+#define SLOBYTE(value) SBYTEn((value), LOW_IND((value), int8))
+#define SLOWORD(value) SWORDn((value), LOW_IND((value), int16))
+#define SLODWORD(value) SDWORDn((value), LOW_IND((value), int32))
+#define SHIBYTE(value) SBYTEn((value), HIGH_IND((value), int8))
+#define SHIWORD(value) SWORDn((value), HIGH_IND((value), int16))
+#define SHIDWORD(value) SDWORDn((value), HIGH_IND((value), int32))
+#define SBYTE1(value) SBYTEn((value), 1)
+#define SBYTE2(value) SBYTEn((value), 2)
+#define SBYTE3(value) SBYTEn((value), 3)
+#define SBYTE4(value) SBYTEn((value), 4)
+#define SBYTE5(value) SBYTEn((value), 5)
+#define SBYTE6(value) SBYTEn((value), 6)
+#define SBYTE7(value) SBYTEn((value), 7)
+#define SBYTE8(value) SBYTEn((value), 8)
+#define SBYTE9(value) SBYTEn((value), 9)
+#define SBYTE10(value) SBYTEn((value), 10)
+#define SBYTE11(value) SBYTEn((value), 11)
+#define SBYTE12(value) SBYTEn((value), 12)
+#define SBYTE13(value) SBYTEn((value), 13)
+#define SBYTE14(value) SBYTEn((value), 14)
+#define SBYTE15(value) SBYTEn((value), 15)
+#define SWORD1(value) SWORDn((value), 1)
+#define SWORD2(value) SWORDn((value), 2)
+#define SWORD3(value) SWORDn((value), 3)
+#define SWORD4(value) SWORDn((value), 4)
+#define SWORD5(value) SWORDn((value), 5)
+#define SWORD6(value) SWORDn((value), 6)
+#define SWORD7(value) SWORDn((value), 7)
 
 // Packed Pairs
 #define __SPAIR16__(high, low) (((int16)(high) << 8) | (uint8)(low))
