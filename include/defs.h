@@ -70,9 +70,9 @@ typedef int8 BYTE;
 typedef int16 WORD;
 typedef int32 DWORD;
 typedef int32 LONG;
-typedef int64 QWORD;
 typedef int BOOL;
 #endif
+typedef int64 QWORD;
 
 // C bool polyfill
 // C doesn't have a bool type but Hex-Rays uses one
