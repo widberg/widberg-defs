@@ -189,11 +189,19 @@ inline uint128 abs128(int128 value) { return value < 0 ? -value : value; }
 #define WORDn(value, index) (((_WORD *)&(value))[index])
 #define DWORDn(value, index) (((_DWORD *)&(value))[index])
 
-#define LOBYTE(value) BYTEn((value), LOW_IND((value), _BYTE))
-#define LOWORD(value) WORDn((value), LOW_IND((value), _WORD))
+#ifndef LOBYTE
+  #define LOBYTE(value) BYTEn((value), LOW_IND((value), _BYTE))
+#endif
+#ifndef LOWORD
+  #define LOWORD(value) WORDn((value), LOW_IND((value), _WORD))
+#endif
 #define LODWORD(value) DWORDn((value), LOW_IND((value), _DWORD))
-#define HIBYTE(value) BYTEn((value), HIGH_IND((value), _BYTE))
-#define HIWORD(value) WORDn((value), HIGH_IND((value), _WORD))
+#ifndef HIBYTE
+  #define HIBYTE(value) BYTEn((value), HIGH_IND((value), _BYTE))
+#endif
+#ifndef HIWORD
+  #define HIWORD(value) WORDn((value), HIGH_IND((value), _WORD))
+#endif
 #define HIDWORD(value) DWORDn((value), HIGH_IND((value), _DWORD))
 #define BYTE1(value) BYTEn((value), 1)
 #define BYTE2(value) BYTEn((value), 2)
