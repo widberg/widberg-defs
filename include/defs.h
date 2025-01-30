@@ -114,16 +114,14 @@ typedef int64 _BOOL8;
 
 // Subtraction
 // https://stackoverflow.com/a/21371401/3997768
-#define GET_MACRO(_0, _1, _2, _3, NAME, ...) NAME
-#define __OFSUB__(...) GET_MACRO(_0, ##__VA_ARGS__, __OFSUB__3, __OFSUB__2, __OFSUB__1, __OFSUB__0)(__VA_ARGS__)
+#define _HEXRAYS_DEFS_H_GET_MACRO(_0, _1, _2, _3, NAME, ...) NAME
+#define __OFSUB__(...) _HEXRAYS_DEFS_H_GET_MACRO(_0, ##__VA_ARGS__, __OFSUB__3, __OFSUB__2, __OFSUB__1, __OFSUB__0)(__VA_ARGS__)
 
 // Clang does not support __builtin_sub_overflow_p
 #define __OFSUB__2(a, b) ({ __typeof__((a) - (b)) x; __builtin_sub_overflow((a), (b), &x); })
 #define __OFSUB__3(a, b, c) (__OFADD__(y, c) ^ __OFSUB__(x, y + c))
 
-// https://stackoverflow.com/a/21371401/3997768
-#define GET_MACRO(_0, _1, _2, _3, NAME, ...) NAME
-#define __CFSUB__(...) GET_MACRO(_0, ##__VA_ARGS__, __CFSUB__3, __CFSUB__2, __CFSUB__1, __CFSUB__0)(__VA_ARGS__)
+#define __CFSUB__(...) _HEXRAYS_DEFS_H_GET_MACRO(_0, ##__VA_ARGS__, __CFSUB__3, __CFSUB__2, __CFSUB__1, __CFSUB__0)(__VA_ARGS__)
 
 #define __CFSUB__2(a, b) ((__typeof__((a) - (b)))(a) < (__typeof__((a) - (b)))(b))
 #define __CFSUB__3(a, b, c) (__CFADD__((b), (c)) ^ __CFSUB__((a), (b) + c))
@@ -285,7 +283,8 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 // No funny business. One byte at a time, low to high.
 #pragma clang loop vectorize(disable)
 #pragma clang loop interleave(disable)
-#pragma clang loop unroll(disable)
+#pragma GCC novector
+#pragma GCC unroll 1 // Works on GCC and Clang
   while (count--)
   {
     *dest_++ = *src_++;
@@ -365,7 +364,6 @@ inline void *qmemcpy(void *dest, const void *src, size_t count)
 ///////////////
 
 // JUMPOUT
-typedef __noreturn void (*__jumpout_t)(void);
-#define JUMPOUT(value) (((__jumpout_t)(value))())
+#define JUMPOUT(value) (((__noreturn void (*)(void))(value))())
 
 #endif // HEXRAYS_DEFS_H
